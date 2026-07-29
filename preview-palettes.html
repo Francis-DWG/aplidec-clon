@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vista previa de paletas - Aplidec</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos propios de la página de vista previa (no tocan los del sitio) */
+        body.preview-page {
+            padding-top: 118px; /* espacio para la barra fija */
+        }
+
+        .palette-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+            z-index: 9999;
+            padding: 12px 16px;
+        }
+
+        .palette-bar-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #555;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .palette-bar-inner {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: thin;
+        }
+
+        .palette-bar-inner::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .palette-bar-inner::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .palette-btn {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+            white-space: nowrap;
+        }
+
+        .palette-btn:hover {
+            border-color: #999;
+            transform: translateY(-1px);
+        }
+
+        .palette-btn.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+            font-weight: 700;
+        }
+
+        .palette-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .palette-dots span {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            display: inline-block;
+        }
+
+        .custom-color-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .custom-color-row label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .custom-color-row input[type="color"] {
+            width: 42px;
+            height: 32px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 2px;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .apply-palette-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #2d3748;
+            color: #fff;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .apply-palette-btn:hover {
+            background: #1a202c;
+        }
+
+        .css-output {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: min(420px, calc(100vw - 48px));
+            background: #1e2430;
+            color: #e6e6e6;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            z-index: 10000;
+            overflow: hidden;
+        }
+
+        .css-output.visible {
+            display: block;
+        }
+
+        .css-output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #161b25;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .css-output-header .css-output-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .css-output-header button {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .copy-css-btn {
+            background: #48bb78;
+            color: #fff;
+        }
+
+        .copy-css-btn:hover {
+            background: #38a169;
+        }
+
+        .close-css-btn {
+            background: #4a5568;
+            color: #fff;
+        }
+
+        .close-css-btn:hover {
+            background: #2d3748;
+        }
+
+        .css-output pre {
+            margin: 0;
+            padding: 16px;
+            font-size: 13px;
+            line-height: 1.7;
+            font-family: Consolas, Monaco, monospace;
+            overflow-x: auto;
+        }
+
+        .preview-section-label {
+            max-width: 1200px;
+            margin: 40px auto 10px;
+            padding: 0 15px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #2d3748;
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 10001;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="preview-page">
+
+    <!-- Barra de selección de paletas -->
+    <div class="palette-bar">
+        <div class="palette-bar-title">
+            <i class="fas fa-palette"></i> Vista previa de paletas de color — haz clic para aplicar en vivo
+        </div>
+        <div class="palette-bar-inner" id="paletteBar"><!-- botones generados por JS --></div>
+        <div class="custom-color-row">
+            <label>
+                <i class="fas fa-eyedropper"></i> Color primario personalizado:
+                <input type="color" id="customColor" value="#1f6fb2">
+            </label>
+            <button class="apply-palette-btn" id="applyPaletteBtn">
+                <i class="fas fa-code"></i> Aplicar esta paleta al sitio
+            </button>
+        </div>
+    </div>
+
+    <!-- Mini cabecera -->
+    <header class="header">
+        <div class="header-main">
+            <div class="container">
+                <div class="header-main-content">
+                    <a href="#" class="logo">
+                        <img src="assets/img/logo_web_7.jpg" alt="Aplidec Logo" style="max-height: 60px;">
+                    </a>
+                    <nav class="nav-desktop">
+                        <ul>
+                            <li><a href="#" class="active">Inicio</a></li>
+                            <li><a href="#">Interior</a></li>
+                            <li><a href="#">Exterior</a></li>
+                            <li><a href="#">Acabados</a></li>
+                            <li><a href="#">Contacto</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="preview-section-label">Hero real del sitio</div>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Aplicaciones Decorativas</h1>
+                    <p class="hero-subtitle">Pinturas y revestimientos profesionales para interior y exterior</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="preview-section-label">Botones</div>
+
+        <!-- Botones -->
+        <section style="padding: 30px 0;">
+            <div class="container" style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <a href="#" class="btn btn-primary">Botón primario</a>
+                <a href="#" class="btn btn-outline">Botón outline</a>
+            </div>
+        </section>
+
+        <div class="preview-section-label">Tarjeta de servicio</div>
+
+        <!-- Tarjeta de servicio -->
+        <section class="services-cards">
+            <div class="container">
+                <div class="cards-grid">
+                    <a href="#" class="service-card">
+                        <div class="service-card-image">
+                            <img src="assets/img/interior.jpg" alt="Interior" loading="lazy">
+                        </div>
+                        <div class="service-card-content">
+                            <h3>Interior</h3>
+                            <p>Pinturas decorativas, ecológicas e industriales para interiores</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <div class="preview-section-label">Tarjeta de característica</div>
+
+        <!-- Feature card -->
+        <section style="padding: 30px 0 50px;">
+            <div class="container">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-paint-roller"></i>
+                        <h3>Acabados profesionales</h3>
+                        <p>Aplicamos las mejores técnicas y productos del mercado para garantizar un resultado impecable y duradero.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="preview-section-label">Sección de contenido</div>
+
+        <!-- Content section -->
+        <section class="content-section">
+            <div class="container">
+                <div class="content-grid">
+                    <div class="content-text">
+                        <h2>Comunidad de propietarios</h2>
+                        <p>Portales, escaleras, rellanos, etc.</p>
+                        <p>Las comunidades de propietarios suelen deteriorarse en exceso y más rápido.</p>
+                        <p>Es aconsejable aplicar pinturas con acabado super-lavable con aditivo anti-bacterias y anti-moho.</p>
+                        <a href="#" class="btn btn-primary">Solicitar presupuesto</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer real -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; 2026 Aplidec Profesional SLU. Todos los derechos reservados.</p>
+                    <p>Camino de Tres Casas número 7, Palazuelos de Eresma 40194, Segovia</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#">Política de privacidad</a>
+                    <a href="#">Política de cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bloque de código CSS para copiar -->
+    <div class="css-output" id="cssOutput">
+        <div class="css-output-header">
+            <span>Variables listas para pegar en <code>:root</code></span>
+            <div class="css-output-actions">
+                <button class="copy-css-btn" id="copyCssBtn"><i class="fas fa-copy"></i> Copiar</button>
+                <button class="close-css-btn" id="closeCssBtn"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <pre id="cssCode"></pre>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function () {
+            'use strict';
+
+            var PALETTES = [
+                { name: 'Azul actual',            primary: '#1f6fb2', primaryDark: '#155a94', secondary: '#e8574a', accent: '#f2a33c' },
+                { name: 'Azul petróleo',          primary: '#16697a', primaryDark: '#0f4c59', secondary: '#e8574a', accent: '#f2a33c' },
+                { name: 'Azul marino elegante',   primary: '#1d3557', primaryDark: '#14263e', secondary: '#e63946', accent: '#f4a261' },
+                { name: 'Gris antracita + coral', primary: '#3a4354', primaryDark: '#2a3140', secondary: '#e8574a', accent: '#f2a33c' },
+                { name: 'Verde bosque refinado',  primary: '#2d6a4f', primaryDark: '#1b4332', secondary: '#e8574a', accent: '#e9c46a' },
+                { name: 'Burdeos premium',        primary: '#7b2d43', primaryDark: '#5c2233', secondary: '#d4a373', accent: '#e9c46a' },
+                { name: 'Negro + dorado lujo',    primary: '#212529', primaryDark: '#141618', secondary: '#c9a227', accent: '#e9c46a' }
+            ];
+
+            var STORAGE_KEY = 'aplidec-palette-preview';
+            var currentPalette = PALETTES[0];
+
+            var paletteBar = document.getElementById('paletteBar');
+            var customColorInput = document.getElementById('customColor');
+            var cssOutput = document.getElementById('cssOutput');
+            var cssCode = document.getElementById('cssCode');
+            var toast = document.getElementById('toast');
+
+            function hexToHsl(hex) {
+                var r = parseInt(hex.slice(1, 3), 16) / 255;
+                var g = parseInt(hex.slice(3, 5), 16) / 255;
+                var b = parseInt(hex.slice(5, 7), 16) / 255;
+                var max = Math.max(r, g, b), min = Math.min(r, g, b);
+                var h = 0, s = 0, l = (max + min) / 2;
+                if (max !== min) {
+                    var d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+                return { h: h * 360, s: s * 100, l: l * 100 };
+            }
+
+            function hslToHex(h, s, l) {
+                h /= 360; s /= 100; l /= 100;
+                var r, g, b;
+                if (s === 0) {
+                    r = g = b = l;
+                } else {
+                    var hue2rgb = function (p, q, t) {
+                        if (t < 0) t += 1;
+                        if (t > 1) t -= 1;
+                        if (t < 1 / 6) return p + (q - p) * 6 * t;
+                        if (t < 1 / 2) return q;
+                        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                        return p;
+                    };
+                    var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                    var p = 2 * l - q;
+                    r = hue2rgb(p, q, h + 1 / 3);
+                    g = hue2rgb(p, q, h);
+                    b = hue2rgb(p, q, h - 1 / 3);
+                }
+                var toHex = function (x) {
+                    var v = Math.round(x * 255).toString(16);
+                    return v.length === 1 ? '0' + v : v;
+                };
+                return '#' + toHex(r) + toHex(g) + toHex(b);
+            }
+
+            function darken(hex, amount) {
+                var hsl = hexToHsl(hex);
+                var newL = Math.max(0, hsl.l * (1 - amount));
+                return hslToHex(hsl.h, hsl.s, newL);
+            }
+
+            function applyPalette(palette) {
+                currentPalette = palette;
+                var root = document.documentElement;
+                root.style.setProperty('--primary', palette.primary);
+                root.style.setProperty('--primary-dark', palette.primaryDark);
+                root.style.setProperty('--secondary', palette.secondary);
+                root.style.setProperty('--accent', palette.accent);
+                customColorInput.value = palette.primary;
+                updateActiveButton();
+                savePalette(palette);
+            }
+
+            function savePalette(palette) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(palette));
+                } catch (e) { /* almacenamiento no disponible */ }
+            }
+
+            function loadSavedPalette() {
+                try {
+                    var saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        var p = JSON.parse(saved);
+                        if (p && p.primary && p.primaryDark && p.secondary && p.accent) {
+                            return p;
+                        }
+                    }
+                } catch (e) { /* ignorar datos corruptos */ }
+                return null;
+            }
+
+            function updateActiveButton() {
+                var buttons = paletteBar.querySelectorAll('.palette-btn');
+                buttons.forEach(function (btn) {
+                    var matches = btn.dataset.primary === currentPalette.primary &&
+                                  btn.dataset.secondary === currentPalette.secondary &&
+                                  btn.dataset.accent === currentPalette.accent;
+                    btn.classList.toggle('active', matches);
+                });
+            }
+
+            function buildPaletteButtons() {
+                PALETTES.forEach(function (palette) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'palette-btn';
+                    btn.dataset.primary = palette.primary;
+                    btn.dataset.secondary = palette.secondary;
+                    btn.dataset.accent = palette.accent;
+
+                    var dots = document.createElement('span');
+                    dots.className = 'palette-dots';
+                    [palette.primary, palette.primaryDark, palette.secondary, palette.accent].forEach(function (color) {
+                        var dot = document.createElement('span');
+                        dot.style.backgroundColor = color;
+                        dots.appendChild(dot);
+                    });
+
+                    var label = document.createElement('span');
+                    label.textContent = palette.name;
+
+                    btn.appendChild(dots);
+                    btn.appendChild(label);
+
+                    btn.addEventListener('click', function () {
+                        applyPalette(palette);
+                    });
+
+                    paletteBar.appendChild(btn);
+                });
+            }
+
+            function buildCssSnippet(palette) {
+                return ':root {\n' +
+                    '    --primary: ' + palette.primary + ';\n' +
+                    '    --primary-dark: ' + palette.primaryDark + ';\n' +
+                    '    --secondary: ' + palette.secondary + ';\n' +
+                    '    --accent: ' + palette.accent + ';\n' +
+                    '}';
+            }
+
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('visible');
+                setTimeout(function () {
+                    toast.classList.remove('visible');
+                }, 2200);
+            }
+
+            customColorInput.addEventListener('input', function () {
+                var primary = customColorInput.value;
+                applyPalette({
+                    name: 'Personalizado',
+                    primary: primary,
+                    primaryDark: darken(primary, 0.20),
+                    secondary: currentPalette.secondary,
+                    accent: currentPalette.accent
+                });
+            });
+
+            document.getElementById('applyPaletteBtn').addEventListener('click', function () {
+                cssCode.textContent = buildCssSnippet(currentPalette);
+                cssOutput.classList.add('visible');
+            });
+
+            document.getElementById('closeCssBtn').addEventListener('click', function () {
+                cssOutput.classList.remove('visible');
+            });
+
+            document.getElementById('copyCssBtn').addEventListener('click', function () {
+                var text = cssCode.textContent;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(function () {
+                        showToast('Código CSS copiado al portapapeles');
+                    }, function () {
+                        showToast('No se pudo copiar');
+                    });
+                } else {
+                    var textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        showToast('Código CSS copiado al portapapeles');
+                    } catch (e) {
+                        showToast('No se pudo copiar');
+                    }
+                    document.body.removeChild(textarea);
+                }
+            });
+
+            buildPaletteButtons();
+            var saved = loadSavedPalette();
+            applyPalette(saved || PALETTES[0]);
+        })();
+    </script>
+</body>
+</html>
