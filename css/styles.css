@@ -1,7 +1,7 @@
 /* Variables */
 :root {
-    --primary: #1f6fb2;
-    --primary-dark: #155a94;
+    --primary: #74c1fb;
+    --primary-dark: #2da1f9;
     --secondary: #e8574a;
     --accent: #f2a33c;
     --dark: #2d2d2d;
@@ -73,11 +73,12 @@ ul {
 
 .btn-primary {
     background: var(--primary);
-    color: var(--white);
+    color: #0d2d45;
 }
 
 .btn-primary:hover {
     background: var(--primary-dark);
+    color: var(--white);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
@@ -173,7 +174,7 @@ ul {
 
 .nav-desktop a:hover {
     color: var(--primary);
-    background: rgba(31, 111, 178, 0.1);
+    background: rgba(116, 193, 251, 0.15);
 }
 
 .nav-desktop a.active {
@@ -347,12 +348,14 @@ main {
     margin-bottom: 20px;
     text-transform: uppercase;
     letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(13, 45, 69, 0.35);
 }
 
 .hero-subtitle {
     font-size: 20px;
     font-weight: 300;
     opacity: 0.9;
+    text-shadow: 0 2px 8px rgba(13, 45, 69, 0.35);
 }
 
 /* Services Cards */
@@ -554,6 +557,7 @@ main {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(13, 45, 69, 0.35);
 }
 
 /* Content Sections */
@@ -862,6 +866,7 @@ main {
     margin-bottom: 15px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(13, 45, 69, 0.35);
 }
 
 .voice-assistant-content p {
@@ -871,6 +876,7 @@ main {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    text-shadow: 0 2px 8px rgba(13, 45, 69, 0.35);
 }
 
 .voice-widget-container {
@@ -919,7 +925,7 @@ main {
     top: -100px;
     left: 16px;
     background: var(--primary);
-    color: var(--white);
+    color: #0d2d45;
     padding: 12px 24px;
     border-radius: var(--radius);
     z-index: 2000;
@@ -963,7 +969,7 @@ textarea:focus-visible {
     right: 30px;
     width: 50px;
     height: 50px;
-    background: var(--primary);
+    background: var(--primary-dark);
     color: var(--white);
     border: none;
     border-radius: 50%;

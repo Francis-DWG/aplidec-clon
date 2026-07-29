@@ -205,7 +205,7 @@ if (revealElements.length > 0 && 'IntersectionObserver' in window) {
 
     // Colores corporativos con variación de tono (hsl: [hBase, hVar, s, l, lVar])
     const PALETTE = [
-        { h: 204, hVar: 12, s: 70, l: 41, lVar: 8 },  // azul corporativo #1f6fb2
+        { h: 204, hVar: 12, s: 93, l: 72, lVar: 8 },  // azul corporativo #74c1fb
         { h: 5,   hVar: 10, s: 77, l: 60, lVar: 8 },  // rojo coral #e8574a
         { h: 33,  hVar: 10, s: 87, l: 59, lVar: 8 }   // naranja dorado #f2a33c
     ];
