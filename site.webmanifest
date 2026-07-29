@@ -1,0 +1,22 @@
+{
+    "name": "Aplidec - Pinturas y Revestimientos",
+    "short_name": "Aplidec",
+    "description": "Aplicamos pinturas decorativas, ecológicas e industriales. Protegemos fachadas, proyectamos corcho y reformamos viviendas y negocios.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2c5f2d",
+    "lang": "es",
+    "icons": [
+        {
+            "src": "assets/img/logo_web_7.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "assets/img/logo_web_7.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
+        }
+    ]
+}
