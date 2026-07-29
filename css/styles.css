@@ -319,6 +319,22 @@ main {
     z-index: 1;
 }
 
+/* Canvas de partículas de pintura (solo index) */
+#paintCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce), (pointer: coarse), (max-width: 767px) {
+    #paintCanvas {
+        display: none;
+    }
+}
+
 .hero h1 {
     font-size: 48px;
     font-weight: 700;

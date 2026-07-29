@@ -183,3 +183,159 @@ if (revealElements.length > 0 && 'IntersectionObserver' in window) {
     // Fallback: show all if IntersectionObserver not supported
     revealElements.forEach(el => el.classList.add('revealed'));
 }
+
+// Interactive paint splatter particles in hero (index only)
+(function initPaintParticles() {
+    const canvas = document.getElementById('paintCanvas');
+    const hero = document.querySelector('.hero');
+    if (!canvas || !hero) return;
+
+    // Desactivado con movimiento reducido, punteros táctiles o pantallas pequeñas
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+    if (window.innerWidth < 768) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const MAX_PARTICLES = 300;
+    const MOUSE_THROTTLE_MS = 40;
+    const AUTO_SPLATTER_MS = 2000;
+    const GRAVITY = 0.05;
+
+    // Colores corporativos con variación de tono (hsl: [hBase, hVar, s, l, lVar])
+    const PALETTE = [
+        { h: 110, hVar: 15, s: 36, l: 27, lVar: 8 },  // verde oscuro #2c5f2d
+        { h: 88,  hVar: 15, s: 41, l: 56, lVar: 8 },  // verde claro #97bc62
+        { h: 42,  hVar: 10, s: 79, l: 46, lVar: 8 }   // dorado #d4a017
+    ];
+
+    const particles = [];
+    let dpr = 1;
+    let lastMouseTime = 0;
+    let lastAutoTime = 0;
+    let rafId = null;
+    let heroVisible = true;
+
+    function randomColor() {
+        const c = PALETTE[(Math.random() * PALETTE.length) | 0];
+        const h = c.h + (Math.random() * 2 - 1) * c.hVar;
+        const l = c.l + (Math.random() * 2 - 1) * c.lVar;
+        return 'hsl(' + h.toFixed(0) + ', ' + c.s + '%, ' + l.toFixed(0) + '%)';
+    }
+
+    function addParticle(x, y, big) {
+        if (particles.length >= MAX_PARTICLES) particles.shift();
+        const angle = Math.random() * Math.PI * 2;
+        const speed = big ? 0.5 + Math.random() * 2 : 1 + Math.random() * 3;
+        particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - (big ? 0.5 : 1.5),
+            size: big ? 4 + Math.random() * 8 : 1 + Math.random() * 3,
+            flatten: big ? 0.35 + Math.random() * 0.3 : 0.8 + Math.random() * 0.2,
+            rotation: Math.random() * Math.PI,
+            color: randomColor(),
+            alpha: 0.5 + Math.random() * 0.4,
+            decay: 0.008 + Math.random() * 0.012
+        });
+    }
+
+    function splatter(x, y) {
+        addParticle(x, y, true);
+        const droplets = 2 + ((Math.random() * 3) | 0);
+        for (let i = 0; i < droplets; i++) {
+            addParticle(x + (Math.random() * 2 - 1) * 10, y + (Math.random() * 2 - 1) * 10, false);
+        }
+    }
+
+    function resizeCanvas() {
+        const rect = hero.getBoundingClientRect();
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resizeCanvas, 150);
+    });
+
+    hero.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        if (now - lastMouseTime < MOUSE_THROTTLE_MS) return;
+        lastMouseTime = now;
+        const rect = hero.getBoundingClientRect();
+        splatter(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    function frame(now) {
+        rafId = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (now - lastAutoTime >= AUTO_SPLATTER_MS) {
+            lastAutoTime = now;
+            const rect = hero.getBoundingClientRect();
+            splatter(Math.random() * rect.width, Math.random() * rect.height);
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += GRAVITY;
+            p.vx *= 0.98;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.size, p.size * p.flatten, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        rafId = requestAnimationFrame(frame);
+    }
+
+    function startLoop() {
+        if (rafId === null && heroVisible && !document.hidden) {
+            rafId = requestAnimationFrame(frame);
+        }
+    }
+
+    function stopLoop() {
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopLoop();
+        else startLoop();
+    });
+
+    if ('IntersectionObserver' in window) {
+        const heroObserver = new IntersectionObserver((entries) => {
+            heroVisible = entries[0].isIntersecting;
+            if (heroVisible) startLoop();
+            else stopLoop();
+        });
+        heroObserver.observe(hero);
+    }
+
+    resizeCanvas();
+    startLoop();
+})();
