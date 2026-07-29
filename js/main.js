@@ -205,9 +205,9 @@ if (revealElements.length > 0 && 'IntersectionObserver' in window) {
 
     // Colores corporativos con variación de tono (hsl: [hBase, hVar, s, l, lVar])
     const PALETTE = [
-        { h: 110, hVar: 15, s: 36, l: 27, lVar: 8 },  // verde oscuro #2c5f2d
-        { h: 88,  hVar: 15, s: 41, l: 56, lVar: 8 },  // verde claro #97bc62
-        { h: 42,  hVar: 10, s: 79, l: 46, lVar: 8 }   // dorado #d4a017
+        { h: 204, hVar: 12, s: 70, l: 41, lVar: 8 },  // azul corporativo #1f6fb2
+        { h: 5,   hVar: 10, s: 77, l: 60, lVar: 8 },  // rojo coral #e8574a
+        { h: 33,  hVar: 10, s: 87, l: 59, lVar: 8 }   // naranja dorado #f2a33c
     ];
 
     const particles = [];
