@@ -12,6 +12,14 @@ Aplidec Profesional SLU es una empresa de pintura y revestimientos con sede en P
 - [Proyectos](https://francis-dwg.github.io/aplidec-clon/proyectos.html): trabajos realizados en Segovia y provincia.
 - [Contacto y presupuestos](https://francis-dwg.github.io/aplidec-clon/contacto.html): presupuesto sin compromiso para viviendas, comunidades y empresas.
 
+## Blog
+
+- [Blog de Aplidec](https://francis-dwg.github.io/aplidec-clon/blog.html): noticias, consejos y tendencias sobre pintura, decoración y revestimientos.
+- [La psicología del color](https://francis-dwg.github.io/aplidec-clon/blog/la-psicologia-del-color.html): cómo influyen los colores en el estado de ánimo, la productividad y el bienestar, con consejos prácticos para elegir colores en viviendas y negocios.
+- [5 ventajas del corcho proyectado para tu fachada](https://francis-dwg.github.io/aplidec-clon/blog/ventajas-corcho-proyectado-fachada.html): aislamiento térmico y acústico, impermeabilidad, elasticidad, durabilidad y sostenibilidad del corcho proyectado.
+- [Tendencias de color para 2026 en interiorismo](https://francis-dwg.github.io/aplidec-clon/blog/tendencias-color-2026-interiorismo.html): tonos tierra, verdes naturales, azules profundos y neutros cálidos que marcarán la temporada.
+- [Cómo mantener la pintura de tu fachada como nueva](https://francis-dwg.github.io/aplidec-clon/blog/mantener-pintura-fachada-como-nueva.html): limpieza, sellado de fisuras, hidrófugos y mantenimiento para alargar la vida de la pintura exterior.
+
 ## Contacto
 
 - Teléfonos: 630 974 876 / 676 495 135

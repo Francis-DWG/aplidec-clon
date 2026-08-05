@@ -51,6 +51,26 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://www.aplidec.com/blog/la-psicologia-del-color.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.aplidec.com/blog/ventajas-corcho-proyectado-fachada.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.aplidec.com/blog/tendencias-color-2026-interiorismo.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
+        <loc>https://www.aplidec.com/blog/mantener-pintura-fachada-como-nueva.html</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    <url>
         <loc>https://www.aplidec.com/politicas-de-privacidad.html</loc>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
