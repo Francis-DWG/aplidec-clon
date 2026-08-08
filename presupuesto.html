@@ -252,10 +252,23 @@
                                     <p id="error-lead-mensaje" class="campo-error" role="alert"></p>
                                 </div>
 
-                                <!-- Trampa antispam: si se rellena, no lo ha hecho una persona. -->
+                                <!-- Trampa antispam: dos campos que ninguna persona llega a ver.
+                                     Si llega cualquiera de los dos con texto dentro, al otro
+                                     lado no había una persona y la API descarta el envío.
+
+                                     Van DOS porque el nombre `empresa` es el que espera la API
+                                     y es, exactamente, el que un gestor de contraseñas o el
+                                     autorrelleno del navegador reconocen como «organización»:
+                                     el día que uno lo rellene solo, el visitante leería
+                                     «¡Gracias!» y su consulta acabaría en la basura sin que
+                                     nadie se enterase. `web_url` no le suena a nada a nadie, así
+                                     que sigue vacío y salva el lead. Por lo mismo, lo que se lee
+                                     en pantalla ya no menciona ninguna empresa. -->
                                 <div class="campo-trampa" aria-hidden="true">
-                                    <label for="empresa">Empresa (deja este campo vacío)</label>
-                                    <input type="text" id="empresa" name="empresa" tabindex="-1" autocomplete="off">
+                                    <label for="no-rellenar-1">No rellenes este campo</label>
+                                    <input type="text" id="no-rellenar-1" name="empresa" tabindex="-1" autocomplete="off">
+                                    <label for="no-rellenar-2">No rellenes este campo tampoco</label>
+                                    <input type="text" id="no-rellenar-2" name="web_url" tabindex="-1" autocomplete="off">
                                 </div>
 
                                 <div class="presupuesto-acciones">

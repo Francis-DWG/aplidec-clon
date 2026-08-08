@@ -299,7 +299,7 @@
             'resultado-titulo', 'resultado-rango', 'resultado-iva',
             'resultado-resumen', 'resultado-legal', 'boton-cambiar',
             'form-lead', 'lead-nombre', 'lead-email', 'lead-telefono',
-            'lead-mensaje', 'empresa', 'boton-enviar-lead',
+            'lead-mensaje', 'no-rellenar-1', 'no-rellenar-2', 'boton-enviar-lead',
             'error-lead-nombre', 'error-lead-contacto', 'error-lead-mensaje',
             'error-lead', 'gracias-titulo'
         ];
@@ -855,9 +855,15 @@
         }
 
         // Se envían solo los datos de la consulta, nunca los importes.
+        // Las dos trampas viajan siempre y vacías: para la API, cualquiera de
+        // las dos con texto dentro es un bot. Van dos y no una porque `empresa`
+        // es justo el nombre que un gestor de contraseñas o el autorrelleno del
+        // navegador reconocen como «organización», y si algún día uno de ellos
+        // la rellena sola, `web_url` sigue estando vacía y el lead se salva.
         var cuerpo = {
             nombre: nombre,
-            empresa: el['empresa'] ? el['empresa'].value : '',
+            empresa: el['no-rellenar-1'] ? el['no-rellenar-1'].value : '',
+            web_url: el['no-rellenar-2'] ? el['no-rellenar-2'].value : '',
             presupuesto: {
                 producto_id: ultimaPeticion.producto_id,
                 superficie: ultimaPeticion.superficie,
