@@ -159,7 +159,10 @@ ul {
     gap: 5px;
 }
 
-/* El menú principal puede pasar a dos líneas antes que desbordar */
+/* Red de seguridad, no el plan: si algún día los enlaces vuelven a no caber, el
+   menú se parte en dos líneas en lugar de desbordar la cabecera. Que hoy quepan
+   en una es cosa de cuántos son —«Privacidad» vive en el pie, que es donde se
+   busca un aviso legal— y de lo que los aprieta la media query de más abajo. */
 .nav-desktop > ul {
     flex-wrap: wrap;
     justify-content: center;
@@ -1090,6 +1093,23 @@ textarea:focus-visible {
 .reveal.revealed {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* Entre la tableta y el escritorio holgado la caja de la cabecera se queda
+   corta para nueve enlaces con su tamaño de siempre. Antes que partir el menú en
+   dos líneas se le quita aire: menos hueco entre enlaces, menos relleno y un
+   punto menos de letra. Los selectores van por hijo directo a propósito, para no
+   tocar el desplegable de «Aplicaciones para exterior», que tiene su propio
+   tamaño y cuelga por debajo. */
+@media (min-width: 769px) and (max-width: 1199px) {
+    .nav-desktop > ul {
+        gap: 2px;
+    }
+
+    .nav-desktop > ul > li > a {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
 }
 
 @media (max-width: 768px) {
