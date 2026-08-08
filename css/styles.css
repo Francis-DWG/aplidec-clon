@@ -1268,6 +1268,30 @@ textarea:focus-visible {
     margin-right: 10px;
 }
 
+/* La salida de emergencia del panel «Cargando…»: si presupuesto.js no llega a
+   correr, nadie va a ocultar ese panel y el visitante se queda mirando girar el
+   círculo. Aparece sola a los diez segundos, sin una línea de JavaScript, que es
+   justo lo que aquí no se puede dar por supuesto. Con la calculadora viva no se
+   ve nunca: para el segundo diez el panel ya está oculto, porque la llamada al
+   catálogo se rinde a los ocho. */
+.presupuesto-tardanza {
+    opacity: 0;
+    visibility: hidden;
+    animation: aparecer-tardanza 0.4s ease-in 10s forwards;
+}
+
+@keyframes aparecer-tardanza {
+    from { opacity: 0; visibility: visible; }
+    to   { opacity: 1; visibility: visible; }
+}
+
+/* Sin animaciones, el aviso aparece igual: de golpe y a la misma hora. */
+@media (prefers-reduced-motion: reduce) {
+    .presupuesto-tardanza {
+        animation: aparecer-tardanza 0s linear 10s forwards;
+    }
+}
+
 /* Degradación amable: la calculadora no puede dar cifra */
 .presupuesto-aviso {
     border-left: 4px solid var(--accent);

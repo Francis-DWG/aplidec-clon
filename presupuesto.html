@@ -122,9 +122,47 @@
                     <!-- Región para anunciar los cambios a lectores de pantalla -->
                     <p id="anuncio" class="visualmente-oculto" role="status" aria-live="polite"></p>
 
+                    <!-- Sin JavaScript no hay calculadora, pero sí hay presupuesto: esto
+                         es lo único que se ve, y basta para no dejar a nadie tirado.
+                         El <style> apaga el «Cargando…» de abajo, que sin scripts se
+                         quedaría dando vueltas para siempre. -->
+                    <noscript>
+                        <style>#panel-cargando { display: none; }</style>
+                        <div class="presupuesto-panel presupuesto-aviso">
+                            <h2><i class="fas fa-circle-info" aria-hidden="true"></i> La calculadora necesita JavaScript</h2>
+                            <p>
+                                Tu navegador lo tiene desactivado, así que aquí no podemos darte
+                                la cifra orientativa. No pasa nada: cuéntanos qué necesitas y te
+                                preparamos un presupuesto sin compromiso.
+                            </p>
+                            <div class="presupuesto-acciones">
+                                <a href="contacto.html" class="btn btn-primary">Pedir presupuesto sin compromiso</a>
+                                <a href="tel:+34630974876" class="btn btn-outline">Llamar al 630 974 876</a>
+                            </div>
+                        </div>
+                    </noscript>
+
                     <!-- Estado 0: cargando el catálogo -->
                     <div id="panel-cargando" class="presupuesto-panel presupuesto-cargando">
                         <p><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> Cargando la calculadora…</p>
+                        <!-- Red de seguridad para el otro caso: JavaScript activado pero
+                             presupuesto.js que no llega a correr (no carga, lo bloquea una
+                             extensión, revienta al interpretarse). Ahí el <noscript> no
+                             salta y este panel se quedaría girando. El aviso aparece solo,
+                             con una animación de CSS, si a los diez segundos el panel sigue
+                             en pantalla; con la calculadora viva nunca se llega a ver,
+                             porque para entonces el panel ya está oculto (la propia llamada
+                             al catálogo se rinde a los ocho). -->
+                        <div class="presupuesto-tardanza">
+                            <p>
+                                La calculadora está tardando más de la cuenta. Si no termina de
+                                cargar, escríbenos o llámanos y te damos precio sin compromiso.
+                            </p>
+                            <div class="presupuesto-acciones">
+                                <a href="contacto.html" class="btn btn-primary">Pedir presupuesto sin compromiso</a>
+                                <a href="tel:+34630974876" class="btn btn-outline">Llamar al 630 974 876</a>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Estado 0-bis: no se puede calcular (degradación amable) -->
