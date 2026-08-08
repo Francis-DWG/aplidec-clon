@@ -789,6 +789,10 @@
     }
 
     function volverAlFormulario() {
+        // Si había un envío en vuelo, deja de contar: su respuesta llegará a un
+        // panel que ya no es este y no debe arrastrar a nadie a ningún sitio.
+        envioLead += 1;
+        restaurarBotonesLead();
         // Los valores del formulario no se tocan: siguen tal cual estaban.
         mostrarPanel('panel-formulario');
         anunciar('Vuelves al formulario con los datos que ya habías puesto.');
@@ -798,6 +802,21 @@
     /* ------------------------------------------------------------------ */
     /* Formulario de contacto (lead)                                       */
     /* ------------------------------------------------------------------ */
+
+    // Cuenta de envíos del formulario de contacto. Sirve para saber si la
+    // respuesta que acaba de llegar es la del envío que sigue en pantalla o la
+    // de uno que el visitante ya ha dado por abandonado.
+    var envioLead = 0;
+
+    var TEXTO_BOTON_LEAD = 'Quiero que me llamen';
+
+    function restaurarBotonesLead() {
+        if (el['boton-enviar-lead']) {
+            el['boton-enviar-lead'].disabled = false;
+            el['boton-enviar-lead'].textContent = TEXTO_BOTON_LEAD;
+        }
+        if (el['boton-cambiar']) el['boton-cambiar'].disabled = false;
+    }
 
     function pareceEmail(texto) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(texto);
@@ -887,18 +906,27 @@
         if (telefono !== '') cuerpo.telefono = telefono;
         if (mensaje !== '') cuerpo.mensaje = mensaje;
 
+        // Este envío queda identificado por su número. Si mientras viaja el
+        // visitante se vuelve al formulario, el contador avanza y la respuesta
+        // que llegue después ya no coincide: se descarta sin tocar la pantalla.
+        // Sin esto, pulsar «Cambiar los datos» durante el envío te devuelve al
+        // formulario y, dos segundos más tarde, la web te arranca de ahí y te
+        // planta en «¡Gracias!» con el foco en otro sitio.
+        var envio = envioLead + 1;
+        envioLead = envio;
+
         var boton = el['boton-enviar-lead'];
-        var textoOriginal = boton ? boton.textContent : '';
         if (boton) {
             boton.disabled = true;
             boton.textContent = 'Enviando…';
         }
+        // Y, antes que descartar la respuesta, evitar la carrera: mientras el
+        // envío está en marcha no se puede salir del panel.
+        if (el['boton-cambiar']) el['boton-cambiar'].disabled = true;
 
         pedir('/api/lead', { cuerpo: cuerpo }).then(function (respuesta) {
-            if (boton) {
-                boton.disabled = false;
-                boton.textContent = textoOriginal;
-            }
+            if (envio !== envioLead) return;
+            restaurarBotonesLead();
 
             if (respuesta.estado === 200 && respuesta.datos && respuesta.datos.ok === true) {
                 if (el['form-lead']) el['form-lead'].reset();
@@ -917,10 +945,8 @@
                 llevarFoco(el['error-lead']);
             }
         }).catch(function (fallo) {
-            if (boton) {
-                boton.disabled = false;
-                boton.textContent = textoOriginal;
-            }
+            if (envio !== envioLead) return;
+            restaurarBotonesLead();
             if (el['error-lead']) {
                 el['error-lead'].textContent = fallo && fallo.tipo === 'tiempo'
                     ? 'El envío ha tardado demasiado. Inténtalo de nuevo o llámanos al ' + TELEFONO_APLIDEC + '.'
@@ -937,6 +963,11 @@
     function iniciar() {
         if (!document.getElementById('presupuesto-app')) return;
         recogerElementos();
+        aplicarLimites();
+        // Hasta que se elige un trabajo no se sabe en qué se mide: se pregunta
+        // por metros cuadrados, que es lo que Aplidec vende, y en cuanto hay
+        // trabajo elegido el campo se reescribe con SU unidad.
+        aplicarUnidad(unidadDe(''));
 
         if (el['producto']) {
             el['producto'].addEventListener('change', alCambiarProducto);
