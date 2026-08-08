@@ -69,7 +69,7 @@
 
         if (codigo === 'demasiadas_peticiones') {
             if (typeof reintentarEn === 'number' && isFinite(reintentarEn) && reintentarEn > 0) {
-                texto += ' Espera ' + segundosLegibles(reintentarEn) + ' e inténtalo de nuevo.';
+                texto += ' Espera ' + esperaLegible(reintentarEn) + ' e inténtalo de nuevo.';
             } else {
                 texto += ' Espera unos segundos e inténtalo de nuevo.';
             }
@@ -77,9 +77,21 @@
         return texto;
     }
 
-    function segundosLegibles(valor) {
-        var entero = Math.round(valor);
-        return entero === 1 ? '1 segundo' : entero + ' segundos';
+    // La API cuenta la espera en segundos y el tope por hora llega a devolver
+    // 3.600: «espera 3.540 segundos» obliga a dividir mentalmente a quien ya
+    // está molesto. Se dice en la unidad en que la gente mide el tiempo, y en
+    // aproximado, porque el segundo exacto no le sirve a nadie para nada.
+    function esperaLegible(valor) {
+        var segundos = Math.max(1, Math.round(valor));
+        if (segundos < 60) {
+            return segundos === 1 ? '1 segundo' : segundos + ' segundos';
+        }
+        var minutos = Math.round(segundos / 60);
+        if (minutos < 60) {
+            return minutos === 1 ? 'un minuto' : 'unos ' + minutos + ' minutos';
+        }
+        var horas = Math.round(minutos / 60);
+        return horas === 1 ? 'una hora' : 'unas ' + horas + ' horas';
     }
 
     // Etiquetas en español para las categorías que llegan de la API. Las claves
