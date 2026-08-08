@@ -1020,6 +1020,7 @@ main {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 textarea:focus-visible {
     outline: 3px solid var(--secondary);
     outline-offset: 2px;
@@ -1183,5 +1184,361 @@ textarea:focus-visible {
     
     .voice-assistant-section {
         padding: 60px 0;
+    }
+}
+
+/* ==================================================================
+   Calculadora de presupuesto orientativo (presupuesto.html)
+   ================================================================== */
+
+.presupuesto-app {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.presupuesto-panel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 35px;
+}
+
+.presupuesto-panel h2 {
+    font-size: 26px;
+    color: var(--dark);
+    margin-bottom: 15px;
+    line-height: 1.3;
+}
+
+.presupuesto-panel h2:focus-visible,
+.presupuesto-panel h3:focus-visible {
+    outline: 3px solid var(--secondary);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+.presupuesto-panel h3 {
+    font-size: 21px;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.presupuesto-intro {
+    color: var(--text-light);
+    margin-bottom: 25px;
+    line-height: 1.7;
+}
+
+/* Cargando */
+.presupuesto-cargando {
+    text-align: center;
+    color: var(--text-light);
+    padding: 60px 30px;
+}
+
+.presupuesto-cargando i {
+    color: var(--primary-dark);
+    margin-right: 10px;
+}
+
+/* Degradación amable: la calculadora no puede dar cifra */
+.presupuesto-aviso {
+    border-left: 4px solid var(--accent);
+}
+
+.presupuesto-aviso h2 i {
+    color: var(--accent);
+    margin-right: 8px;
+}
+
+.presupuesto-aviso p {
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.7;
+}
+
+/* Formulario */
+.presupuesto-form .form-group select {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 15px;
+    background: var(--white);
+    color: var(--text);
+    transition: var(--transition);
+}
+
+.presupuesto-form .form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.presupuesto-form .form-group input[type="number"] {
+    max-width: 160px;
+}
+
+.form-fieldset {
+    border: 0;
+    padding: 0;
+}
+
+.form-fieldset legend {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--dark);
+    padding: 0;
+}
+
+.opciones-radio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.opcion-radio {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.opcion-radio:hover {
+    border-color: var(--primary);
+    background: rgba(116, 193, 251, 0.08);
+}
+
+.opcion-radio input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--primary-dark);
+    cursor: pointer;
+}
+
+.opcion-radio label {
+    cursor: pointer;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.campo-ayuda {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.5;
+}
+
+.campo-error {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #b02a1d;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.campo-error:empty {
+    display: none;
+}
+
+.campo-error-bloque {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: rgba(232, 87, 74, 0.1);
+    border-left: 4px solid var(--secondary);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.presupuesto-form [aria-invalid="true"] {
+    border-color: var(--secondary);
+}
+
+.presupuesto-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+/* Trampa antispam: fuera de la vista pero no oculta con type=hidden */
+.campo-trampa {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Solo para lectores de pantalla */
+.visualmente-oculto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Resultado */
+/* La cifra es lo más importante de la página: se busca contraste alto,
+   no un fondo de color sobre el que el blanco apenas se lee. */
+.resultado-caja {
+    background: var(--light);
+    border: 2px solid var(--primary);
+    border-top: 6px solid var(--primary-dark);
+    border-radius: var(--radius);
+    padding: 30px 25px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.resultado-etiqueta {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--dark-light);
+    margin-bottom: 10px;
+}
+
+.resultado-rango {
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #0d2d45;
+    word-break: break-word;
+}
+
+.resultado-iva {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--dark-light);
+}
+
+.resultado-resumen {
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.resultado-aviso {
+    margin-top: 20px;
+    font-size: 15px;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+.resultado-aviso i {
+    color: var(--accent);
+    margin-right: 6px;
+}
+
+.resultado-legal {
+    margin-top: 12px;
+    padding: 15px 18px;
+    background: var(--light);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.65;
+}
+
+.resultado-lead {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+}
+
+/* Gracias */
+.presupuesto-gracias {
+    text-align: center;
+    border-top: 4px solid var(--primary-dark);
+}
+
+.presupuesto-gracias h2 i {
+    color: var(--primary-dark);
+    margin-right: 8px;
+}
+
+.presupuesto-gracias p {
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+.presupuesto-gracias a {
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.presupuesto-gracias .presupuesto-acciones {
+    justify-content: center;
+}
+
+/* Alternativa siempre visible */
+.presupuesto-alternativa {
+    max-width: 700px;
+    margin: 50px auto 0;
+    padding-top: 35px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.presupuesto-alternativa h2 {
+    font-size: 24px;
+    color: var(--dark);
+    margin-bottom: 12px;
+}
+
+.presupuesto-alternativa p {
+    color: var(--text-light);
+    line-height: 1.7;
+}
+
+.presupuesto-alternativa .presupuesto-acciones {
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .presupuesto-panel {
+        padding: 25px 20px;
+    }
+
+    .presupuesto-panel h2 {
+        font-size: 22px;
+    }
+
+    .resultado-rango {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .presupuesto-panel {
+        padding: 20px 15px;
+    }
+
+    .resultado-caja {
+        padding: 25px 15px;
+    }
+
+    .resultado-rango {
+        font-size: 25px;
+    }
+
+    .presupuesto-acciones .btn {
+        width: 100%;
     }
 }
