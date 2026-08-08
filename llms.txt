@@ -10,6 +10,7 @@ Aplidec Profesional SLU es una empresa de pintura y revestimientos con sede en P
 - [Pintura anti-radón](https://francis-dwg.github.io/aplidec-clon/aplicaciones-para-exterior/pintura-anti-radon.html): pintura impermeabilizante con nanopartículas de grafeno que sella suelos y muros para impedir el paso del gas radón en nueva construcción y reformas.
 - [Acabados](https://francis-dwg.github.io/aplidec-clon/acabados.html): papel pintado, murales, efecto hormigón, efecto acero corten y esmaltes.
 - [Proyectos](https://francis-dwg.github.io/aplidec-clon/proyectos.html): trabajos realizados en Segovia y provincia.
+- [Presupuesto orientativo](https://francis-dwg.github.io/aplidec-clon/presupuesto.html): calculadora online que da una horquilla de precio orientativa a partir del trabajo, los metros cuadrados, el estado del soporte y el número de manos. No es una oferta vinculante: el precio final requiere visita técnica y medición en obra.
 - [Contacto y presupuestos](https://francis-dwg.github.io/aplidec-clon/contacto.html): presupuesto sin compromiso para viviendas, comunidades y empresas.
 
 ## Blog
