@@ -159,6 +159,12 @@ ul {
     gap: 5px;
 }
 
+/* El menú principal puede pasar a dos líneas antes que desbordar */
+.nav-desktop > ul {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
 .nav-desktop > ul > li {
     position: relative;
 }
