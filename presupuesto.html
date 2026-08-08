@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presupuesto orientativo - Aplidec</title>
-    <meta name="description" content="Calcula en un minuto un presupuesto orientativo de pintura o revestimiento: elige el trabajo, indica los metros cuadrados, el estado del soporte y las manos. Sin compromiso.">
+    <meta name="description" content="Calcula en un minuto un presupuesto orientativo de pintura o revestimiento: elige el trabajo, indica la superficie, el estado del soporte y las manos. Sin compromiso.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.aplidec.com/presupuesto.html">
     <meta property="og:type" content="website">
@@ -142,7 +142,7 @@
                     <div id="panel-formulario" class="presupuesto-panel" hidden>
                         <h2 id="formulario-titulo" tabindex="-1">Calcula tu presupuesto en un minuto</h2>
                         <p class="presupuesto-intro">
-                            Dinos qué trabajo necesitas, cuántos metros cuadrados hay que tratar, en qué estado está
+                            Dinos qué trabajo necesitas, cuánto hay que tratar, en qué estado está
                             el soporte y cuántas manos quieres dar. Te damos una <strong>horquilla de precio
                             orientativa</strong>: no es una oferta cerrada, pero te sirve para hacerte una idea antes
                             de llamarnos.
@@ -158,8 +158,12 @@
                                 <p id="error-producto" class="campo-error" role="alert"></p>
                             </div>
 
+                            <!-- El rótulo, el ejemplo y la ayuda de este campo los reescribe
+                                 presupuesto.js con la unidad del trabajo elegido (m², metros
+                                 lineales o unidades). Lo que hay escrito aquí es el caso de
+                                 hoy, que es lo único que Aplidec vende ahora mismo. -->
                             <div class="form-group">
-                                <label for="superficie">Superficie a tratar, en metros cuadrados (m²) *</label>
+                                <label for="superficie" id="etiqueta-superficie">Superficie a tratar, en metros cuadrados (m²) *</label>
                                 <input type="text" id="superficie" name="superficie" inputmode="decimal"
                                        autocomplete="off" placeholder="Por ejemplo: 85,5"
                                        aria-describedby="ayuda-superficie error-superficie" required>
@@ -175,10 +179,10 @@
 
                             <div class="form-group">
                                 <label for="manos">¿Cuántas manos hay que dar? *</label>
-                                <input type="number" id="manos" name="manos" min="1" max="10" step="1"
+                                <input type="number" id="manos" name="manos" min="1" max="20" step="1"
                                        inputmode="numeric" autocomplete="off" value="2"
                                        aria-describedby="ayuda-manos error-manos" required>
-                                <p id="ayuda-manos" class="campo-ayuda">Número entero, de 1 a 10: no existe media mano.</p>
+                                <p id="ayuda-manos" class="campo-ayuda">Número entero, de 1 a 20: no existe media mano.</p>
                                 <p id="error-manos" class="campo-error" role="alert"></p>
                             </div>
 
@@ -222,7 +226,7 @@
                                 <div class="form-group">
                                     <label for="lead-nombre">Nombre *</label>
                                     <input type="text" id="lead-nombre" name="nombre" autocomplete="name"
-                                           aria-describedby="error-lead-nombre" required>
+                                           maxlength="80" aria-describedby="error-lead-nombre" required>
                                     <p id="error-lead-nombre" class="campo-error" role="alert"></p>
                                 </div>
 
@@ -242,7 +246,7 @@
 
                                 <div class="form-group">
                                     <label for="lead-mensaje">Mensaje (opcional)</label>
-                                    <textarea id="lead-mensaje" name="mensaje" maxlength="1000" rows="4"
+                                    <textarea id="lead-mensaje" name="mensaje" maxlength="500" rows="4"
                                               placeholder="Cuéntanos cualquier detalle que nos ayude: plantas, altura, plazos…"
                                               aria-describedby="error-lead-mensaje"></textarea>
                                     <p id="error-lead-mensaje" class="campo-error" role="alert"></p>

@@ -16,12 +16,18 @@
     // Tiempo máximo de espera de cada llamada (AbortController).
     var TIEMPO_MAXIMO_MS = 8000;
 
-    // Límites de cordura del formulario (no son reglas de precio: solo evitan
-    // enviar disparates a la API).
-    var SUPERFICIE_MAXIMA = 100000;
+    // Límites del formulario. Son EXACTAMENTE los que aplica la API
+    // (`TOPE_SUPERFICIE`, `TOPE_MANOS` y los topes por campo de `/api/lead`), y
+    // esa igualdad no es cosmética: si la web fuera más permisiva, dejaría
+    // teclear algo que el servidor va a rechazar después, con un mensaje que ya
+    // no puede señalar el campo; si fuera más estricta, le prohibiría al
+    // visitante algo que sí se puede pedir. Al cambiar un tope allí, hay que
+    // cambiarlo aquí.
+    var SUPERFICIE_MAXIMA = 10000;
     var MANOS_MINIMAS = 1;
-    var MANOS_MAXIMAS = 10;
-    var MENSAJE_MAXIMO = 1000;
+    var MANOS_MAXIMAS = 20;
+    var MENSAJE_MAXIMO = 500;
+    var NOMBRE_MAXIMO = 80;
 
     var TELEFONO_APLIDEC = '630 974 876';
 
@@ -35,7 +41,7 @@
         // POST /api/presupuesto
         producto_inactivo: 'El trabajo que has elegido ya no está disponible. Selecciona otro de la lista o vuelve a cargar la página.',
         estado_desconocido: 'El estado del soporte que has elegido no es válido. Vuelve a seleccionarlo, por favor.',
-        superficie_invalida: 'La superficie no es válida. Escribe los metros cuadrados como un número mayor que cero.',
+        superficie_invalida: 'La cantidad indicada no es válida. Escríbela como un número mayor que cero.',
         manos_invalidas: 'El número de manos no es válido. Indica un número entero de una mano o más.',
         precio_no_configurado: 'Todavía no tenemos tarifa cargada para este trabajo. Cuéntanoslo y te preparamos un presupuesto a medida.',
         factor_invalido: 'No hemos podido valorar el estado del soporte indicado. Prueba con otra opción o escríbenos.',
@@ -46,7 +52,7 @@
         sin_contacto: 'Necesitamos al menos un email o un teléfono para poder responderte.',
         email_invalido: 'El email no parece correcto. Revísalo, por favor.',
         telefono_invalido: 'El teléfono no parece correcto. Revísalo, por favor.',
-        mensaje_largo: 'El mensaje es demasiado largo. Resúmelo un poco, por favor.',
+        mensaje_largo: 'El mensaje es demasiado largo: no puede pasar de ' + MENSAJE_MAXIMO + ' caracteres.',
         demasiadas_peticiones: 'Has hecho muchos envíos seguidos.',
         no_disponible: 'El servicio no está disponible en este momento. Vuelve a intentarlo en unos minutos o llámanos al ' + TELEFONO_APLIDEC + '.'
     };
@@ -76,11 +82,15 @@
         return entero === 1 ? '1 segundo' : entero + ' segundos';
     }
 
-    // Etiquetas en español para las categorías que llegan de la API.
+    // Etiquetas en español para las categorías que llegan de la API. Las claves
+    // son las que de verdad manda el servidor (`CATEGORIAS` en su panel:
+    // interior, exterior y acabado, en singular), no las que uno diría: una
+    // clave mal escrita aquí no rompe nada, se cae al respaldo de abajo y el
+    // grupo aparece titulado «Acabado» sin que nadie se entere.
     var ETIQUETAS_CATEGORIA = {
         interior: 'Interior',
         exterior: 'Exterior',
-        acabados: 'Acabados',
+        acabado: 'Acabados',
         impermeabilizacion: 'Impermeabilización',
         reformas: 'Reformas',
         otros: 'Otros trabajos'
@@ -111,8 +121,7 @@
             texto = texto.slice(1);
         }
         var trozos = texto.split('.');
-        var entera = trozos[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        return signo + entera + ',' + trozos[1];
+        return signo + formatearMiles(trozos[0]) + ',' + trozos[1];
     }
 
     // Rango «2.500,00 – 5.000,00 €» tal cual lo devuelve la API.
@@ -123,11 +132,12 @@
         return a === b ? a + ' €' : a + ' – ' + b + ' €';
     }
 
-    // Superficie en formato español (no es dinero, solo la cifra que se tecleó).
+    // La cantidad que se tecleó, escrita en español: miles con punto y decimales
+    // con coma. No es dinero y aquí no se calcula nada; se reescribe la cifra.
     function formatearSuperficie(valor) {
-        var texto = String(valor);
-        if (texto.indexOf('.') === -1) return texto;
-        return texto.replace('.', ',');
+        var trozos = String(valor).split('.');
+        var entera = formatearMiles(trozos[0]);
+        return trozos.length > 1 ? entera + ',' + trozos[1] : entera;
     }
 
     // Porcentaje de IVA a partir del tipo que devuelve la API (0.21 -> «21 %»).
@@ -144,10 +154,90 @@
         }
     }
 
-    function etiquetaUnidad(unidad) {
-        if (unidad === 'm2') return 'm²';
-        if (unidad === 'ml') return 'ml';
-        return unidad || 'm²';
+    // Miles con punto, como se escriben en español. No es dinero: es el tope del
+    // formulario, que se enseña dentro de una frase para que diga la cifra de
+    // verdad en lugar de un «demasiado grande» que no orienta.
+    function formatearMiles(entero) {
+        return String(entero).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Unidades                                                            */
+    /* ------------------------------------------------------------------ */
+
+    // Cada producto del catálogo trae su unidad y el panel deja elegir entre m²,
+    // metros lineales y unidades. Hoy Aplidec solo vende m² y por eso no se
+    // nota, pero preguntar «cuántos metros cuadrados» para presupuestar seis
+    // puertas lacadas es preguntar mal, y aceptar «2,5» puertas es peor. De aquí
+    // sale TODO lo que la web dice sobre la cantidad: el rótulo del campo, el
+    // ejemplo, la ayuda, el teclado del móvil, si admite decimales, los dos
+    // errores propios y cómo se lee luego en el resumen.
+    var UNIDADES = {
+        m2: {
+            simbolo: 'm²',
+            etiqueta: 'Superficie a tratar, en metros cuadrados (m²)',
+            ejemplo: 'Por ejemplo: 85,5',
+            ayuda: 'Puedes usar coma o punto para los decimales.',
+            teclado: 'decimal',
+            decimales: true,
+            queFalta: 'Indica cuántos metros cuadrados hay que tratar.',
+            malEscrito: 'Escribe la superficie como un número mayor que cero, con coma o punto para los decimales (por ejemplo, 85,5).',
+            resumenSingular: 'm²',
+            resumenPlural: 'm²'
+        },
+        ml: {
+            simbolo: 'ml',
+            etiqueta: 'Longitud a tratar, en metros lineales (ml)',
+            ejemplo: 'Por ejemplo: 24,5',
+            ayuda: 'Puedes usar coma o punto para los decimales.',
+            teclado: 'decimal',
+            decimales: true,
+            queFalta: 'Indica cuántos metros lineales hay que tratar.',
+            malEscrito: 'Escribe la longitud como un número mayor que cero, con coma o punto para los decimales (por ejemplo, 24,5).',
+            resumenSingular: 'metro lineal',
+            resumenPlural: 'metros lineales'
+        },
+        ud: {
+            simbolo: 'ud',
+            etiqueta: '¿Cuántas unidades hay que tratar?',
+            ejemplo: 'Por ejemplo: 6',
+            ayuda: 'Número entero de unidades: media puerta no se laca.',
+            teclado: 'numeric',
+            decimales: false,
+            queFalta: 'Indica cuántas unidades hay que tratar.',
+            malEscrito: 'Escribe cuántas unidades son, con un número entero mayor que cero (por ejemplo, 6).',
+            resumenSingular: 'unidad',
+            resumenPlural: 'unidades'
+        }
+    };
+
+    var UNIDAD_POR_DEFECTO = 'm2';
+
+    // Una unidad que no está en la tabla se pregunta en genérico y se enseña
+    // tal cual llega. Es feo, pero mucho menos que llamar «metros cuadrados» a
+    // algo que Aplidec acaba de dar de alta y que no lo es.
+    function unidadDe(clave) {
+        var normal = String(clave == null ? '' : clave).trim().toLowerCase();
+        if (normal === '') return UNIDADES[UNIDAD_POR_DEFECTO];
+        if (Object.prototype.hasOwnProperty.call(UNIDADES, normal)) return UNIDADES[normal];
+        return {
+            simbolo: normal,
+            etiqueta: 'Cantidad a tratar, en ' + normal,
+            ejemplo: '',
+            ayuda: 'Puedes usar coma o punto para los decimales.',
+            teclado: 'decimal',
+            decimales: true,
+            queFalta: 'Indica qué cantidad hay que tratar.',
+            malEscrito: 'Escribe la cantidad como un número mayor que cero.',
+            resumenSingular: normal,
+            resumenPlural: normal
+        };
+    }
+
+    // «85,5 m²», «24,5 metros lineales», «6 unidades», «1 unidad».
+    function cantidadConUnidad(valor, unidad) {
+        var etiqueta = valor === 1 ? unidad.resumenSingular : unidad.resumenPlural;
+        return formatearSuperficie(valor) + ' ' + etiqueta;
     }
 
     /* ------------------------------------------------------------------ */
@@ -202,7 +292,8 @@
             'panel-resultado', 'panel-gracias',
             'texto-no-disponible',
             'form-presupuesto', 'producto', 'producto-detalle', 'superficie',
-            'estado-soporte', 'manos', 'boton-calcular',
+            'etiqueta-superficie', 'ayuda-superficie',
+            'estado-soporte', 'manos', 'ayuda-manos', 'boton-calcular',
             'error-producto', 'error-superficie', 'error-estado', 'error-manos',
             'error-calculo',
             'resultado-titulo', 'resultado-rango', 'resultado-iva',
@@ -401,11 +492,65 @@
         return encontrado;
     }
 
+    /* ------------------------------------------------------------------ */
+    /* Topes y unidad: el formulario se escribe desde las constantes        */
+    /* ------------------------------------------------------------------ */
+
+    // Los atributos del HTML se ponen desde aquí, y no a mano en la página, para
+    // que no puedan volver a decir un máximo distinto del que comprueba la
+    // validación de más abajo. El HTML lleva los mismos valores escritos, que es
+    // lo que se ve si esta función no llega a correr.
+    function aplicarLimites() {
+        if (el['manos']) {
+            el['manos'].setAttribute('min', String(MANOS_MINIMAS));
+            el['manos'].setAttribute('max', String(MANOS_MAXIMAS));
+        }
+        if (el['ayuda-manos']) {
+            el['ayuda-manos'].textContent = 'Número entero, de ' + MANOS_MINIMAS + ' a ' +
+                MANOS_MAXIMAS + ': no existe media mano.';
+        }
+        // Sin esto, el visitante escribe un nombre de 100 letras, lo envía, y la
+        // API le contesta con el mismo código que si lo hubiera dejado vacío:
+        // «escribe tu nombre», delante de un nombre escrito.
+        if (el['lead-nombre']) el['lead-nombre'].setAttribute('maxlength', String(NOMBRE_MAXIMO));
+        if (el['lead-mensaje']) el['lead-mensaje'].setAttribute('maxlength', String(MENSAJE_MAXIMO));
+    }
+
+    // Deja el campo de la cantidad preguntando en la unidad del trabajo elegido.
+    // `step` no pinta nada aquí: el campo es de texto a propósito, para poder
+    // aceptar la coma decimal española, y quien impide media puerta es
+    // `parsearCantidad`. Lo que sí cambia es el teclado que sale en el móvil.
+    function aplicarUnidad(unidad) {
+        if (el['etiqueta-superficie']) {
+            el['etiqueta-superficie'].textContent = unidad.etiqueta + ' *';
+        }
+        if (el['ayuda-superficie']) {
+            el['ayuda-superficie'].textContent = unidad.ayuda;
+        }
+        var campo = el['superficie'];
+        if (!campo) return;
+        campo.setAttribute('inputmode', unidad.teclado);
+        if (unidad.ejemplo) {
+            campo.setAttribute('placeholder', unidad.ejemplo);
+        } else {
+            campo.removeAttribute('placeholder');
+        }
+    }
+
+    // La unidad del trabajo que hay elegido ahora mismo.
+    function unidadActual() {
+        var producto = productoPorId(el['producto'] ? el['producto'].value : '');
+        return unidadDe(producto ? producto.unidad : '');
+    }
+
     // Al elegir un trabajo se muestra su descripción y, si la persona todavía no
     // ha tocado el campo, se propone el número de manos que incluye la tarifa.
     function alCambiarProducto() {
         var producto = productoPorId(el['producto'].value);
         var detalle = el['producto-detalle'];
+
+        aplicarUnidad(unidadDe(producto ? producto.unidad : ''));
+
         if (!detalle) return;
 
         if (!producto) {
@@ -419,7 +564,12 @@
         if (typeof producto.manos_incluidas === 'number' && producto.manos_incluidas > 0) {
             partes.push('Nuestra referencia para este trabajo incluye ' +
                 producto.manos_incluidas + (producto.manos_incluidas === 1 ? ' mano.' : ' manos.'));
-            if (!manosTocadas && el['manos']) {
+            // Solo se propone lo que este formulario acepta. Autorrellenar un
+            // valor que la validación va a rechazar acto seguido es tenderle
+            // una trampa al visitante con sus propios datos.
+            if (!manosTocadas && el['manos'] &&
+                producto.manos_incluidas >= MANOS_MINIMAS &&
+                producto.manos_incluidas <= MANOS_MAXIMAS) {
                 el['manos'].value = String(producto.manos_incluidas);
             }
         }
@@ -431,13 +581,18 @@
     /* Validación del formulario de presupuesto                            */
     /* ------------------------------------------------------------------ */
 
-    // Acepta «12,5» y «12.5». Devuelve el número o null si no vale.
-    function parsearSuperficie(texto) {
+    // Acepta «12,5» y «12.5» cuando la unidad admite decimales, y solo enteros
+    // cuando no (no hay media puerta). Devuelve el número, o null si no es un
+    // número que valga. Pasarse del tope NO se resuelve aquí: es un caso con
+    // frase propia, porque «85000» está bien escrito y merece que se le diga
+    // cuál es el máximo en vez de que se le llame número inválido.
+    function parsearCantidad(texto, unidad) {
         var limpio = String(texto == null ? '' : texto).trim().replace(/\s+/g, '').replace(',', '.');
         if (limpio === '') return null;
-        if (!/^\d+(\.\d{1,3})?$/.test(limpio)) return null;
+        var patron = unidad.decimales ? /^\d+(\.\d{1,3})?$/ : /^\d+$/;
+        if (!patron.test(limpio)) return null;
         var numero = Number(limpio);
-        if (!isFinite(numero) || numero <= 0 || numero > SUPERFICIE_MAXIMA) return null;
+        if (!isFinite(numero) || numero <= 0) return null;
         return numero;
     }
 
@@ -462,19 +617,24 @@
             valores.producto_id = parseInt(producto.id, 10);
         }
 
-        // Superficie
-        var textoSuperficie = el['superficie'] ? el['superficie'].value : '';
-        if (String(textoSuperficie).trim() === '') {
-            ponerError(el['error-superficie'], el['superficie'], 'Indica cuántos metros cuadrados hay que tratar.');
+        // Cantidad, en la unidad del trabajo elegido (m², ml o unidades)
+        var unidad = unidadDe(producto ? producto.unidad : '');
+        var textoCantidad = el['superficie'] ? el['superficie'].value : '';
+        if (String(textoCantidad).trim() === '') {
+            ponerError(el['error-superficie'], el['superficie'], unidad.queFalta);
             errores.push(el['superficie']);
         } else {
-            var superficie = parsearSuperficie(textoSuperficie);
-            if (superficie === null) {
+            var cantidad = parsearCantidad(textoCantidad, unidad);
+            if (cantidad === null) {
+                ponerError(el['error-superficie'], el['superficie'], unidad.malEscrito);
+                errores.push(el['superficie']);
+            } else if (cantidad > SUPERFICIE_MAXIMA) {
                 ponerError(el['error-superficie'], el['superficie'],
-                    'Escribe la superficie como un número mayor que cero, con coma o punto para los decimales (por ejemplo, 85,5).');
+                    'Por aquí calculamos hasta ' + formatearMiles(SUPERFICIE_MAXIMA) + ' ' +
+                    unidad.simbolo + '. Si tu obra es mayor, cuéntanoslo y la valoramos contigo.');
                 errores.push(el['superficie']);
             } else {
-                valores.superficie = superficie;
+                valores.superficie = cantidad;
             }
         }
 
@@ -592,10 +752,10 @@
         // Resumen en una línea de lo que se ha pedido.
         var producto = productoPorId(peticion.producto_id);
         var factor = factorPorClave(peticion.estado_soporte);
-        var unidad = etiquetaUnidad(respuesta.unidad || (producto && producto.unidad));
+        var unidad = unidadDe(respuesta.unidad || (producto && producto.unidad));
         var resumen = [
             producto ? producto.nombre : 'Trabajo seleccionado',
-            formatearSuperficie(peticion.superficie) + ' ' + unidad,
+            cantidadConUnidad(peticion.superficie, unidad),
             factor ? factor.etiqueta : peticion.estado_soporte,
             peticion.manos === 1 ? '1 mano' : peticion.manos + ' manos'
         ].join(' · ');
@@ -652,6 +812,13 @@
         var nombre = el['lead-nombre'] ? el['lead-nombre'].value.trim() : '';
         if (nombre === '') {
             ponerError(el['error-lead-nombre'], el['lead-nombre'], 'Escribe tu nombre para que sepamos cómo dirigirnos a ti.');
+            errores.push(el['lead-nombre']);
+        } else if (nombre.length > NOMBRE_MAXIMO) {
+            // El `maxlength` ya lo impide al teclear y al pegar; esto es para
+            // cuando no llega a ponerse. Que lo diga la web y no la API, que
+            // para un nombre largo contesta el mismo código que para uno vacío.
+            ponerError(el['error-lead-nombre'], el['lead-nombre'],
+                'El nombre no puede pasar de ' + NOMBRE_MAXIMO + ' caracteres.');
             errores.push(el['lead-nombre']);
         }
 
